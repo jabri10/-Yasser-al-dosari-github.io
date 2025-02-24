@@ -10,7 +10,7 @@
   <style>
     body {
       background-color: green;
-      font-size: 16px;
+      font-size: 2vw; /* Viewport width dependent text size */
       color: hsl(72, 38%, 95%);
       margin: 0;
       font-family: Arial, sans-serif;
@@ -62,25 +62,25 @@
 
     @media (min-width: 600px) {
       body {
-        font-size: 18px;
+        font-size: 1.8vw;
       }
     }
 
     @media (min-width: 768px) {
       body {
-        font-size: 20px;
+        font-size: 1.6vw;
       }
     }
 
     @media (min-width: 992px) {
       body {
-        font-size: 22px;
+        font-size: 1.4vw;
       }
     }
 
     @media (min-width: 1200px) {
       body {
-        font-size: 24px;
+        font-size: 1.2vw;
       }
     }
   </style>
@@ -88,14 +88,19 @@
 <body>
   <header>
     <h1>Welcome to Al Dosari's Page</h1>
+    <nav>
+      <a href="#interests">Interests</a> |
+      <a href="#music-player-images">Music Player Images</a> |
+      <a href="#videos">Videos</a>
+    </nav>
   </header>
   <main>
     <section id="interests">
       <h4>My Interests</h4>
       <ul>
-        <li>My hobbies are football...</li>
-        <li>My sports are also football...</li>
-        <li>My friends and family are at home...</li>
+        <li><b>My hobbies</b> are <i>football</i>...</li>
+        <li><b>My sports</b> are also <i>football</i>...</li>
+        <li><b>My friends and family</b> are at home...</li>
       </ul>
     </section>
 
@@ -103,8 +108,8 @@
     <section id="music-player-images">
       <h4>Music Player Images</h4>
       <div>
-        <img src="https://as1.ftcdn.net/jpg/05/84/61/42/1000_F_584614222_CRl9xT7mcy40pxF0CX8mnMr6OMAXCJYA.jpg" alt="Image 2">
-        <img src="" alt="Repeat for more images">
+        <img src="https://as1.ftcdn.net/jpg/05/84/61/42/1000_F_584614222_CRl9xT7mcy40pxF0CX8mnMr6OMAXCJYA.jpg" alt="Music Player Image" width="50%" height="auto">
+        <img src="https://via.placeholder.com/150" alt="Placeholder Image" width="50%" height="auto">
       </div>
       <div> 
         <p>The music player image has a play button and can go backward and forward when tapping the line going in front and behind.</p>
@@ -116,17 +121,19 @@
       <h4>My Videos</h4>
       <video width="320" height="240" controls>
         <source src="video1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
       </video>
       <iframe width="560" height="315" src="https://www.youtube.com/embed/yOda3cvuuJc?si=Y-uIw6cd87FcB2I-" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       <video width="320" height="240" controls>
         <source src="video2.mp4" type="video/mp4">
+        Your browser does not support the video tag.
       </video>
       <iframe width="560" height="315" src="https://www.youtube.com/embed/_d0YqQ53mko?si=whQ67u9MeyoivJtW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </section>
   </main>
 
   <footer id="Omar">
-    &copy; 2023 Al Dosari's Page
+    &copy; 2023 Al Dosari's Page &bull; <a href="mailto:contact@aldosari.com">Contact Us</a>
   </footer>
 
   <script src='Website dependencies/script.js'></script>
