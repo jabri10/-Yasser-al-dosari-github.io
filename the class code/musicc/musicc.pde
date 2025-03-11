@@ -3,7 +3,13 @@
 //library=minim
 //Global variables
 //
-void setup() {}
+void setup() {
+  //fullScreen();
+  println(displayWidth, displayHeight);
+  int appWidth = displayWidth;
+  int appHeight =displayHeight;
+  //
+}
 //
 void draw() {}
 //
