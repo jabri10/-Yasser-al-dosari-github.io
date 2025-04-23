@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Text: static
 //
 String title ="Wahoo! Mullets are Awesome.";
@@ -40,3 +41,6 @@ text(titleX, titleY, titleWidth, titleHeight);
 color whiteInk = #FFFFFF;
 fill(whiteInk); //reset
 //
+=======
+// Text;static
+>>>>>>> 9dc9f4e2f5b14c596afefcb80037452477542973
