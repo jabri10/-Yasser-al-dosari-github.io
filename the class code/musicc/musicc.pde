@@ -1,21 +1,23 @@
-// Dynamic not static
-//
-//library=minim
 import ddf.minim.*;
 
 // Global variables
 Minim minim;
 AudioPlayer player;
+AudioPlayer player2;
 
 float boxWidth, boxHeight;
 float displayX, displayY, displayWidth, displayHeight;
 float buttonSpacing;
 String status = "Stopped";
+boolean isFirstTrack = true;
 
 void setup() {
   fullScreen(); // Use full screen
   minim = new Minim(this);
-  player = minim.loadFile("096.mp3"); // Ensure the file exists in the "data" folder
+  
+  // Load the two audio files
+  player = minim.loadFile("096.mp3");  // Load 096.mp3 from the data folder
+  player2 = minim.loadFile("097.mp3"); // Load 097.mp3 from the data folder
 
   // Set dimensions for the display and control buttons
   displayWidth = width * 0.8;
@@ -45,6 +47,7 @@ void draw() {
   drawButton("Stop", width * 0.5, height * 0.6);
   drawButton("Rewind", width * 0.65, height * 0.6);
   drawButton("Forward", width * 0.8, height * 0.6);
+  drawButton("Switch Track", width * 0.9, height * 0.6);  // Button to switch between tracks
 }
 
 void drawButton(String label, float x, float y) {
@@ -59,28 +62,58 @@ void drawButton(String label, float x, float y) {
 void mousePressed() {
   // Check if Play button is clicked
   if (isButtonClicked(width * 0.2, height * 0.6)) {
-    player.play();
+    if (isFirstTrack) {
+      player.play();
+    } else {
+      player2.play();
+    }
     status = "Playing";
   }
   // Check if Pause button is clicked
   else if (isButtonClicked(width * 0.35, height * 0.6)) {
-    player.pause();
+    if (isFirstTrack) {
+      player.pause();
+    } else {
+      player2.pause();
+    }
     status = "Paused";
   }
   // Check if Stop button is clicked
   else if (isButtonClicked(width * 0.5, height * 0.6)) {
-    player.rewind(); // Simply rewind when stopped
+    if (isFirstTrack) {
+      player.rewind(); // Simply rewind when stopped
+    } else {
+      player2.rewind();
+    }
     status = "Stopped";
   }
   // Check if Rewind button is clicked
   else if (isButtonClicked(width * 0.65, height * 0.6)) {
-    player.rewind();
+    if (isFirstTrack) {
+      player.rewind();
+    } else {
+      player2.rewind();
+    }
     status = "Rewound";
   }
   // Check if Forward button is clicked
   else if (isButtonClicked(width * 0.8, height * 0.6)) {
-    player.cue(player.length() - 5000); // Jump to the last 5 seconds
+    if (isFirstTrack) {
+      player.cue(player.length() - 5000); // Jump to the last 5 seconds of Track 1
+    } else {
+      player2.cue(player2.length() - 5000); // Jump to the last 5 seconds of Track 2
+    }
     status = "Forwarded";
+  }
+  // Check if Switch Track button is clicked
+  else if (isButtonClicked(width * 0.9, height * 0.6)) {
+    isFirstTrack = !isFirstTrack;  // Toggle between the two tracks
+
+    if (isFirstTrack) {
+      status = "Switched to Track 1 (096.mp3)";
+    } else {
+      status = "Switched to Track 2 (097.mp3)";
+    }
   }
 }
 
@@ -90,6 +123,7 @@ boolean isButtonClicked(float x, float y) {
 
 void stop() {
   player.close();
+  player2.close();
   minim.stop();
   super.stop();
 }
