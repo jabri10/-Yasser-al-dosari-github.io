@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+//dynamic not static
+//
+>>>>>>> d5315fe22ccc41885e75ea72ab63686d1d9ae93e
 import ddf.minim.*;
 
 // Global variables
