@@ -1,9 +1,9 @@
-//Dynamic not static
+// Dynamic not static
 //
 //library=minim
 import ddf.minim.*;
 
-//Global variables
+// Global variables
 Minim minim;
 AudioPlayer player;
 
@@ -15,7 +15,7 @@ String status = "Stopped";
 void setup() {
   fullScreen(); // Use full screen
   minim = new Minim(this);
-  player = minim.loadFile("song.mp3"); // Replace with your song file
+  player = minim.loadFile("096.mp3"); // Ensure the file exists in the "data" folder
 
   // Set dimensions for the display and control buttons
   displayWidth = width * 0.8;
@@ -69,8 +69,7 @@ void mousePressed() {
   }
   // Check if Stop button is clicked
   else if (isButtonClicked(width * 0.5, height * 0.6)) {
-    player.pause();
-    player.rewind();
+    player.rewind(); // Simply rewind when stopped
     status = "Stopped";
   }
   // Check if Rewind button is clicked
