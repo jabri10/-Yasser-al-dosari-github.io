@@ -1,36 +1,42 @@
-
 //dynamic not static
-//
 import ddf.minim.*;
 
 // Global variables
 Minim minim;
 AudioPlayer player;
 AudioPlayer player2;
-
+AudioPlayer player3;
 float boxWidth, boxHeight;
 float displayX, displayY, displayWidth, displayHeight;
 float buttonSpacing;
 String status = "Stopped";
-boolean isFirstTrack = true;
+int currentTrack = 1;
+String track1Name = "096.mp3";
+String track2Name = "097.mp3";
+String track3Name = "098.mp3";
+float buttonY;
 
 void setup() {
   fullScreen(); // Use full screen
   minim = new Minim(this);
-  
-  // Load the two audio files
-  player = minim.loadFile("096.mp3");  // Load 096.mp3 from the data folder
-  player2 = minim.loadFile("097.mp3"); // Load 097.mp3 from the data folder
+  try {
+    player = minim.loadFile(track1Name);
+    player2 = minim.loadFile(track2Name);
+    player3 = minim.loadFile(track3Name);
+  } catch (Exception e) {
+    println("Error loading audio files: " + e);
+    exit();
+  }
 
   // Set dimensions for the display and control buttons
   displayWidth = width * 0.8;
-  displayHeight = height * 0.4;
+  displayHeight = height * 0.2;
   displayX = (width - displayWidth) / 2;
   displayY = height * 0.1;
-
-  boxWidth = width * 0.1;
-  boxHeight = height * 0.1;
-  buttonSpacing = width * 0.02;
+  boxWidth = width * 0.12;
+  boxHeight = height * 0.08;
+  buttonSpacing = (width - (6 * boxWidth)) / 7;
+  buttonY = height * 0.4;
 }
 
 void draw() {
@@ -38,24 +44,31 @@ void draw() {
 
   // Draw the display box
   fill(50);
-  rect(displayX, displayY, displayWidth, displayHeight);
+  rect(displayX, displayY, displayWidth, displayHeight, 10);
   fill(255);
   textAlign(CENTER, CENTER);
-  textSize(24);
-  text("Status: " + status, displayX + displayWidth / 2, displayY + displayHeight / 2);
+  textSize(20);
+  String currentTrackName = getCurrentTrackName();
+  text("Track: " + currentTrackName + "\nStatus: " + status, displayX + displayWidth / 2, displayY + displayHeight / 2);
 
   // Draw control buttons
-  drawButton("Play", width * 0.2, height * 0.6);
-  drawButton("Pause", width * 0.35, height * 0.6);
-  drawButton("Stop", width * 0.5, height * 0.6);
-  drawButton("Rewind", width * 0.65, height * 0.6);
-  drawButton("Forward", width * 0.8, height * 0.6);
-  drawButton("Switch Track", width * 0.9, height * 0.6);  // Button to switch between tracks
+  float startX = buttonSpacing;
+  drawButton("Play", startX, buttonY);
+  startX += boxWidth + buttonSpacing;
+  drawButton("Pause", startX, buttonY);
+  startX += boxWidth + buttonSpacing;
+  drawButton("Stop", startX, buttonY);
+  startX += boxWidth + buttonSpacing;
+  drawButton("Rewind", startX, buttonY);
+  startX += boxWidth + buttonSpacing;
+  drawButton("Forward", startX, buttonY);
+  startX += boxWidth + buttonSpacing;
+  drawButton("Switch", startX, buttonY);
 }
 
 void drawButton(String label, float x, float y) {
   fill(100);
-  rect(x, y, boxWidth, boxHeight);
+  rect(x, y, boxWidth, boxHeight, 5);
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(16);
@@ -63,60 +76,30 @@ void drawButton(String label, float x, float y) {
 }
 
 void mousePressed() {
-  // Check if Play button is clicked
-  if (isButtonClicked(width * 0.2, height * 0.6)) {
-    if (isFirstTrack) {
-      player.play();
-    } else {
-      player2.play();
-    }
-    status = "Playing";
-  }
-  // Check if Pause button is clicked
-  else if (isButtonClicked(width * 0.35, height * 0.6)) {
-    if (isFirstTrack) {
-      player.pause();
-    } else {
-      player2.pause();
-    }
-    status = "Paused";
-  }
-  // Check if Stop button is clicked
-  else if (isButtonClicked(width * 0.5, height * 0.6)) {
-    if (isFirstTrack) {
-      player.rewind(); // Simply rewind when stopped
-    } else {
-      player2.rewind();
-    }
-    status = "Stopped";
-  }
-  // Check if Rewind button is clicked
-  else if (isButtonClicked(width * 0.65, height * 0.6)) {
-    if (isFirstTrack) {
-      player.rewind();
-    } else {
-      player2.rewind();
-    }
-    status = "Rewound";
-  }
-  // Check if Forward button is clicked
-  else if (isButtonClicked(width * 0.8, height * 0.6)) {
-    if (isFirstTrack) {
-      player.cue(player.length() - 5000); // Jump to the last 5 seconds of Track 1
-    } else {
-      player2.cue(player2.length() - 5000); // Jump to the last 5 seconds of Track 2
-    }
-    status = "Forwarded";
-  }
-  // Check if Switch Track button is clicked
-  else if (isButtonClicked(width * 0.9, height * 0.6)) {
-    isFirstTrack = !isFirstTrack;  // Toggle between the two tracks
+  AudioPlayer activePlayer = getCurrentPlayer();
 
-    if (isFirstTrack) {
-      status = "Switched to Track 1 (096.mp3)";
-    } else {
-      status = "Switched to Track 2 (097.mp3)";
-    }
+  if (isButtonClicked(buttonSpacing, buttonY)) {
+    activePlayer.play();
+    status = "Playing";
+  } else if (isButtonClicked(buttonSpacing + boxWidth + buttonSpacing, buttonY)) {
+    activePlayer.pause();
+    status = "Paused";
+  } else if (isButtonClicked(buttonSpacing + 2 * (boxWidth + buttonSpacing), buttonY)) {
+    activePlayer.rewind();
+    activePlayer.pause();
+    status = "Stopped";
+  } else if (isButtonClicked(buttonSpacing + 3 * (boxWidth + buttonSpacing), buttonY)) {
+    activePlayer.rewind();
+    status = "Rewinding";
+  } else if (isButtonClicked(buttonSpacing + 4 * (boxWidth + buttonSpacing), buttonY)) {
+    int jumpTime = 5000;
+    int newPosition = min(activePlayer.position() + jumpTime, activePlayer.length());
+    activePlayer.cue(newPosition);
+    activePlayer.play();
+    status = "Forwarding";
+  } else if (isButtonClicked(buttonSpacing + 5 * (boxWidth + buttonSpacing), buttonY)) {
+    currentTrack = (currentTrack % 3) + 1;
+    status = "Switched to Track " + currentTrack + " (" + getCurrentTrackName() + ")";
   }
 }
 
@@ -124,9 +107,22 @@ boolean isButtonClicked(float x, float y) {
   return mouseX > x && mouseX < x + boxWidth && mouseY > y && mouseY < y + boxHeight;
 }
 
+AudioPlayer getCurrentPlayer() {
+  if (currentTrack == 1) return player;
+  else if (currentTrack == 2) return player2;
+  else return player3;
+}
+
+String getCurrentTrackName() {
+  if (currentTrack == 1) return track1Name;
+  else if (currentTrack == 2) return track2Name;
+  else return track3Name;
+}
+
 void stop() {
-  player.close();
-  player2.close();
-  minim.stop();
+  if (player != null) player.close();
+  if (player2 != null) player2.close();
+  if (player3 != null) player3.close();
+  if (minim != null) minim.stop();
   super.stop();
 }
