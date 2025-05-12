@@ -1,136 +1,97 @@
 import ddf.minim.*;
+import java.io.File;
 
 // Global variables
 Minim minim;
-AudioPlayer[] players;
-String[] trackNames = { "096.mp3", "097.mp3", "098.mp3", "099.mp3" };
+AudioPlayer player;
+String[] trackNames;
 int currentTrack = 0;
-float boxWidth, boxHeight;
-float displayX, displayY, displayWidth, displayHeight;
-float buttonSpacing;
-String status = "Stopped";
-float buttonY;
 
 void setup() {
-  fullScreen();
+  size(800, 600);
   minim = new Minim(this);
 
-  players = new AudioPlayer[trackNames.length];
-  try {
-    for (int i = 0; i < trackNames.length; i++) {
-      players[i] = minim.loadFile(trackNames[i]);
-    }
-  } catch (Exception e) {
-    println("Error loading audio files: " + e);
+  // Load track names dynamically from the "data" folder
+  File folder = new File(dataPath(""));
+  File[] files = folder.listFiles();
+  if (files == null || files.length == 0) {
+    println("No tracks found in the data folder!");
     exit();
   }
 
-  displayWidth = width * 0.8;
-  displayHeight = height * 0.2;
-  displayX = (width - displayWidth) / 2;
-  displayY = height * 0.1;
-  boxWidth = width * 0.12;
-  boxHeight = height * 0.08;
-  buttonSpacing = (width - (6 * boxWidth)) / 7;
-  buttonY = height * 0.4;
+  // Filter for .mp3 files
+  trackNames = new String[files.length];
+  int count = 0;
+  for (File file : files) {
+    if (file.getName().endsWith(".mp3")) {
+      trackNames[count++] = file.getName();
+    }
+  }
+
+  // Resize the array to fit the actual number of tracks
+  trackNames = subset(trackNames, 0, count);
+
+  if (trackNames.length == 0) {
+    println("No .mp3 files found in the data folder!");
+    exit();
+  }
+
+  // Load the first track
+  player = minim.loadFile(trackNames[currentTrack]);
 }
 
 void draw() {
   background(30);
 
-  fill(50);
-  rect(displayX, displayY, displayWidth, displayHeight, 10);
+  // Display track info
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(20);
-  text("Track: " + trackNames[currentTrack] + "\nStatus: " + status,
-       displayX + displayWidth / 2, displayY + displayHeight / 2);
+  text("Track: " + trackNames[currentTrack], width / 2, height / 4);
 
-  float startX = buttonSpacing;
-  drawButton("Play", startX, buttonY);
-  startX += boxWidth + buttonSpacing;
-  drawButton("Pause", startX, buttonY);
-  startX += boxWidth + buttonSpacing;
-  drawButton("Stop", startX, buttonY);
-  startX += boxWidth + buttonSpacing;
-  drawButton("Rewind", startX, buttonY);
-  startX += boxWidth + buttonSpacing;
-  drawButton("Forward", startX, buttonY);
-  startX += boxWidth + buttonSpacing;
-  drawButton("Switch", startX, buttonY);
+  // Draw buttons dynamically based on window size
+  float buttonWidth = width / 6;
+  float buttonHeight = height / 10;
+  float playX = width / 3 - buttonWidth / 2;
+  float nextX = 2 * width / 3 - buttonWidth / 2;
+  float buttonY = height / 2 - buttonHeight / 2;
 
-  checkAutoPlay();
+  drawButton("Play", playX, buttonY, buttonWidth, buttonHeight);
+  drawButton("Next", nextX, buttonY, buttonWidth, buttonHeight);
 }
 
-void drawButton(String label, float x, float y) {
+void drawButton(String label, float x, float y, float w, float h) {
   fill(100);
-  rect(x, y, boxWidth, boxHeight, 5);
+  rect(x, y, w, h, 5);
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(16);
-  text(label, x + boxWidth / 2, y + boxHeight / 2);
+  text(label, x + w / 2, y + h / 2);
 }
 
 void mousePressed() {
-  AudioPlayer activePlayer = players[currentTrack];
+  float buttonWidth = width / 6;
+  float buttonHeight = height / 10;
+  float playX = width / 3 - buttonWidth / 2;
+  float nextX = 2 * width / 3 - buttonWidth / 2;
+  float buttonY = height / 2 - buttonHeight / 2;
 
-  if (isButtonClicked(buttonSpacing, buttonY)) {
-    stopAllPlayers();
-    activePlayer.play();
-    status = "Playing";
-  } else if (isButtonClicked(buttonSpacing + boxWidth + buttonSpacing, buttonY)) {
-    activePlayer.pause();
-    status = "Paused";
-  } else if (isButtonClicked(buttonSpacing + 2 * (boxWidth + buttonSpacing), buttonY)) {
-    activePlayer.rewind();
-    activePlayer.pause();
-    status = "Stopped";
-  } else if (isButtonClicked(buttonSpacing + 3 * (boxWidth + buttonSpacing), buttonY)) {
-    activePlayer.rewind();
-    status = "Rewinding";
-  } else if (isButtonClicked(buttonSpacing + 4 * (boxWidth + buttonSpacing), buttonY)) {
-    int jumpTime = 5000;
-    int newPosition = min(activePlayer.position() + jumpTime, activePlayer.length());
-    activePlayer.cue(newPosition);
-    activePlayer.play();
-    status = "Forwarding";
-  } else if (isButtonClicked(buttonSpacing + 5 * (boxWidth + buttonSpacing), buttonY)) {
-    stopAllPlayers();
+  if (isButtonClicked(playX, buttonY, buttonWidth, buttonHeight)) {
+    player.play();
+  } else if (isButtonClicked(nextX, buttonY, buttonWidth, buttonHeight)) {
+    player.close();
     currentTrack = (currentTrack + 1) % trackNames.length;
-    status = "Switched to Track " + (currentTrack + 1) + " (" + trackNames[currentTrack] + ")";
+    player = minim.loadFile(trackNames[currentTrack]);
+    player.play();
   }
 }
 
-boolean isButtonClicked(float x, float y) {
-  return mouseX > x && mouseX < x + boxWidth && mouseY > y && mouseY < y + boxHeight;
-}
-
-void stopAllPlayers() {
-  for (int i = 0; i < players.length; i++) {
-    if (players[i].isPlaying() || players[i].position() > 0) {
-      players[i].rewind();
-      players[i].pause();
-    }
-  }
-}
-
-void checkAutoPlay() {
-  for (int i = 0; i < players.length; i++) {
-    if (players[i].isPlaying() && players[i].position() >= players[i].length() - 10) {
-      players[i].pause();
-      players[i].rewind();
-      currentTrack = (i + 1) % players.length;
-      players[currentTrack].play();
-      status = "Auto-playing Track " + (currentTrack + 1) + " (" + trackNames[currentTrack] + ")";
-      break;
-    }
-  }
+boolean isButtonClicked(float x, float y, float w, float h) {
+  return mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h;
 }
 
 void stop() {
-  for (int i = 0; i < players.length; i++) {
-    if (players[i] != null) players[i].close();
-  }
+  if (player != null) player.close();
   if (minim != null) minim.stop();
   super.stop();
 }
