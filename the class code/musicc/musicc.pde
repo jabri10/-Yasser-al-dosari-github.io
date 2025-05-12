@@ -17,7 +17,7 @@ String track3Name = "098.mp3";
 float buttonY;
 
 void setup() {
-  fullScreen(); // Use full screen
+  fullScreen();
   minim = new Minim(this);
   try {
     player = minim.loadFile(track1Name);
@@ -28,7 +28,6 @@ void setup() {
     exit();
   }
 
-  // Set dimensions for the display and control buttons
   displayWidth = width * 0.8;
   displayHeight = height * 0.2;
   displayX = (width - displayWidth) / 2;
@@ -42,7 +41,6 @@ void setup() {
 void draw() {
   background(30);
 
-  // Draw the display box
   fill(50);
   rect(displayX, displayY, displayWidth, displayHeight, 10);
   fill(255);
@@ -51,7 +49,6 @@ void draw() {
   String currentTrackName = getCurrentTrackName();
   text("Track: " + currentTrackName + "\nStatus: " + status, displayX + displayWidth / 2, displayY + displayHeight / 2);
 
-  // Draw control buttons
   float startX = buttonSpacing;
   drawButton("Play", startX, buttonY);
   startX += boxWidth + buttonSpacing;
@@ -79,6 +76,7 @@ void mousePressed() {
   AudioPlayer activePlayer = getCurrentPlayer();
 
   if (isButtonClicked(buttonSpacing, buttonY)) {
+    stopAllPlayers();
     activePlayer.play();
     status = "Playing";
   } else if (isButtonClicked(buttonSpacing + boxWidth + buttonSpacing, buttonY)) {
@@ -98,6 +96,7 @@ void mousePressed() {
     activePlayer.play();
     status = "Forwarding";
   } else if (isButtonClicked(buttonSpacing + 5 * (boxWidth + buttonSpacing), buttonY)) {
+    stopAllPlayers();
     currentTrack = (currentTrack % 3) + 1;
     status = "Switched to Track " + currentTrack + " (" + getCurrentTrackName() + ")";
   }
@@ -117,6 +116,12 @@ String getCurrentTrackName() {
   if (currentTrack == 1) return track1Name;
   else if (currentTrack == 2) return track2Name;
   else return track3Name;
+}
+
+void stopAllPlayers() {
+  if (player.isPlaying()) player.pause();
+  if (player2.isPlaying()) player2.pause();
+  if (player3.isPlaying()) player3.pause();
 }
 
 void stop() {
