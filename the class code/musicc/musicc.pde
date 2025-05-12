@@ -1,28 +1,25 @@
-//dynamic not static
 import ddf.minim.*;
 
 // Global variables
 Minim minim;
-AudioPlayer player;
-AudioPlayer player2;
-AudioPlayer player3;
+AudioPlayer[] players;
+String[] trackNames = { "096.mp3", "097.mp3", "098.mp3", "099.mp3" };
+int currentTrack = 0;
 float boxWidth, boxHeight;
 float displayX, displayY, displayWidth, displayHeight;
 float buttonSpacing;
 String status = "Stopped";
-int currentTrack = 1;
-String track1Name = "096.mp3";
-String track2Name = "097.mp3";
-String track3Name = "098.mp3";
 float buttonY;
 
 void setup() {
   fullScreen();
   minim = new Minim(this);
+
+  players = new AudioPlayer[trackNames.length];
   try {
-    player = minim.loadFile(track1Name);
-    player2 = minim.loadFile(track2Name);
-    player3 = minim.loadFile(track3Name);
+    for (int i = 0; i < trackNames.length; i++) {
+      players[i] = minim.loadFile(trackNames[i]);
+    }
   } catch (Exception e) {
     println("Error loading audio files: " + e);
     exit();
@@ -46,8 +43,8 @@ void draw() {
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(20);
-  String currentTrackName = getCurrentTrackName();
-  text("Track: " + currentTrackName + "\nStatus: " + status, displayX + displayWidth / 2, displayY + displayHeight / 2);
+  text("Track: " + trackNames[currentTrack] + "\nStatus: " + status,
+       displayX + displayWidth / 2, displayY + displayHeight / 2);
 
   float startX = buttonSpacing;
   drawButton("Play", startX, buttonY);
@@ -61,6 +58,8 @@ void draw() {
   drawButton("Forward", startX, buttonY);
   startX += boxWidth + buttonSpacing;
   drawButton("Switch", startX, buttonY);
+
+  checkAutoPlay();
 }
 
 void drawButton(String label, float x, float y) {
@@ -73,7 +72,7 @@ void drawButton(String label, float x, float y) {
 }
 
 void mousePressed() {
-  AudioPlayer activePlayer = getCurrentPlayer();
+  AudioPlayer activePlayer = players[currentTrack];
 
   if (isButtonClicked(buttonSpacing, buttonY)) {
     stopAllPlayers();
@@ -97,8 +96,8 @@ void mousePressed() {
     status = "Forwarding";
   } else if (isButtonClicked(buttonSpacing + 5 * (boxWidth + buttonSpacing), buttonY)) {
     stopAllPlayers();
-    currentTrack = (currentTrack % 3) + 1;
-    status = "Switched to Track " + currentTrack + " (" + getCurrentTrackName() + ")";
+    currentTrack = (currentTrack + 1) % trackNames.length;
+    status = "Switched to Track " + (currentTrack + 1) + " (" + trackNames[currentTrack] + ")";
   }
 }
 
@@ -106,28 +105,32 @@ boolean isButtonClicked(float x, float y) {
   return mouseX > x && mouseX < x + boxWidth && mouseY > y && mouseY < y + boxHeight;
 }
 
-AudioPlayer getCurrentPlayer() {
-  if (currentTrack == 1) return player;
-  else if (currentTrack == 2) return player2;
-  else return player3;
-}
-
-String getCurrentTrackName() {
-  if (currentTrack == 1) return track1Name;
-  else if (currentTrack == 2) return track2Name;
-  else return track3Name;
-}
-
 void stopAllPlayers() {
-  if (player.isPlaying()) player.pause();
-  if (player2.isPlaying()) player2.pause();
-  if (player3.isPlaying()) player3.pause();
+  for (int i = 0; i < players.length; i++) {
+    if (players[i].isPlaying() || players[i].position() > 0) {
+      players[i].rewind();
+      players[i].pause();
+    }
+  }
+}
+
+void checkAutoPlay() {
+  for (int i = 0; i < players.length; i++) {
+    if (players[i].isPlaying() && players[i].position() >= players[i].length() - 10) {
+      players[i].pause();
+      players[i].rewind();
+      currentTrack = (i + 1) % players.length;
+      players[currentTrack].play();
+      status = "Auto-playing Track " + (currentTrack + 1) + " (" + trackNames[currentTrack] + ")";
+      break;
+    }
+  }
 }
 
 void stop() {
-  if (player != null) player.close();
-  if (player2 != null) player2.close();
-  if (player3 != null) player3.close();
+  for (int i = 0; i < players.length; i++) {
+    if (players[i] != null) players[i].close();
+  }
   if (minim != null) minim.stop();
   super.stop();
 }
