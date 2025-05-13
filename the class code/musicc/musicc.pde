@@ -15,6 +15,9 @@ void setup() {
   players = new AudioPlayer[trackNames.length];
   for (int i = 0; i < trackNames.length; i++) {
     players[i] = minim.loadFile(trackNames[i]);
+    if (players[i] == null) {
+      println("Error: Could not load " + trackNames[i]);
+    }
   }
 }
 
@@ -35,7 +38,7 @@ void draw() {
 
 void drawButton(String label, float x, float y) {
   fill(100);
-  rect(x - 50, y - 20, 100, 40, 5);
+  rect(x - 50, y - 20, 100, 40);
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(16);
@@ -43,38 +46,14 @@ void drawButton(String label, float x, float y) {
 }
 
 void mousePressed() {
-  AudioPlayer activePlayer = players[currentTrack];
+  if (players[currentTrack] == null) {
+    println("Error: No track loaded for current track index " + currentTrack);
+    return;
+  }
 
-  if (isButtonClicked(width / 4, height / 2)) {
+  if (mouseX > width / 4 - 50 && mouseX < width / 4 + 50 && mouseY > height / 2 - 20 && mouseY < height / 2 + 20) {
+    // Play button
     stopAllPlayers();
-    activePlayer.play();
+    players[currentTrack].play();
     status = "Playing";
-  } else if (isButtonClicked(2 * width / 4, height / 2)) {
-    activePlayer.rewind();
-    activePlayer.pause();
-    status = "Stopped";
-  } else if (isButtonClicked(3 * width / 4, height / 2)) {
-    stopAllPlayers();
-    currentTrack = (currentTrack + 1) % trackNames.length;
-    status = "Next Track: " + trackNames[currentTrack];
-  }
-}
-
-boolean isButtonClicked(float x, float y) {
-  return mouseX > x - 50 && mouseX < x + 50 && mouseY > y - 20 && mouseY < y + 20;
-}
-
-void stopAllPlayers() {
-  for (int i = 0; i < players.length; i++) {
-    players[i].rewind();
-    players[i].pause();
-  }
-}
-
-void stop() {
-  for (int i = 0; i < players.length; i++) {
-    if (players[i] != null) players[i].close();
-  }
-  if (minim != null) minim.stop();
-  super.stop();
-}
+  } else if (mouseX > 2 * width
