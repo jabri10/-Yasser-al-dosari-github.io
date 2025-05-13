@@ -1,0 +1,65 @@
+// Library - Minim
+import ddf.minim.*;
+
+// Global Variables
+Minim minim;
+int numberOfSongs = 4; // Best Practice
+AudioPlayer[] playList = new AudioPlayer[numberOfSongs];
+int currentSong = 0;
+
+void setup() {
+  size(700, 500);
+  minim = new Minim(this);
+
+  // Load songs into the playlist
+  String[] songNames = { "song1.mp3", "song2.mp3", "song3.mp3", "song4.mp3" };
+  for (int i = 0; i < numberOfSongs; i++) {
+    playList[i] = minim.loadFile(songNames[i]);
+  }
+}
+
+void draw() {
+  background(30);
+
+  // Display current song
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  text("Now Playing: Song " + (currentSong + 1), width / 2, height / 4);
+
+  // Draw buttons
+  drawButton("Play", width / 3, height / 2, 100, 40);
+  drawButton("Next", 2 * width / 3, height / 2, 100, 40);
+}
+
+void drawButton(String label, float x, float y, float w, float h) {
+  fill(100);
+  rect(x - w / 2, y - h / 2, w, h, 5);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(16);
+  text(label, x, y);
+}
+
+void mousePressed() {
+  if (isButtonClicked(width / 3, height / 2, 100, 40)) {
+    playList[currentSong].play();
+  } else if (isButtonClicked(2 * width / 3, height / 2, 100, 40)) {
+    playList[currentSong].pause();
+    playList[currentSong].rewind();
+    currentSong = (currentSong + 1) % numberOfSongs;
+    playList[currentSong].play();
+  }
+}
+
+boolean isButtonClicked(float x, float y, float w, float h) {
+  return mouseX > x - w / 2 && mouseX < x + w / 2 && mouseY > y - h / 2 && mouseY < y + h / 2;
+}
+
+void stop() {
+  for (int i = 0; i < numberOfSongs; i++) {
+    if (playList[i] != null) playList[i].close();
+  }
+  if (minim != null) minim.stop();
+  super.stop();
+}

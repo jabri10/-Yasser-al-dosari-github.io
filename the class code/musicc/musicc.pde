@@ -1,43 +1,21 @@
 import ddf.minim.*;
-import java.io.File;
 
 // Global variables
 Minim minim;
-AudioPlayer player;
-String[] trackNames;
+AudioPlayer[] players;
+String[] trackNames = { "096.mp3", "097.mp3", "098.mp3", "099.mp3" };
 int currentTrack = 0;
+String status = "Stopped";
 
 void setup() {
   size(800, 600);
   minim = new Minim(this);
 
-  // Load track names dynamically from the "data" folder
-  File folder = new File(dataPath(""));
-  File[] files = folder.listFiles();
-  if (files == null || files.length == 0) {
-    println("No tracks found in the data folder!");
-    exit();
+  // Load audio files
+  players = new AudioPlayer[trackNames.length];
+  for (int i = 0; i < trackNames.length; i++) {
+    players[i] = minim.loadFile(trackNames[i]);
   }
-
-  // Filter for .mp3 files
-  trackNames = new String[files.length];
-  int count = 0;
-  for (File file : files) {
-    if (file.getName().endsWith(".mp3")) {
-      trackNames[count++] = file.getName();
-    }
-  }
-
-  // Resize the array to fit the actual number of tracks
-  trackNames = subset(trackNames, 0, count);
-
-  if (trackNames.length == 0) {
-    println("No .mp3 files found in the data folder!");
-    exit();
-  }
-
-  // Load the first track
-  player = minim.loadFile(trackNames[currentTrack]);
 }
 
 void draw() {
@@ -47,51 +25,56 @@ void draw() {
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(20);
-  text("Track: " + trackNames[currentTrack], width / 2, height / 4);
+  text("Track: " + trackNames[currentTrack] + "\nStatus: " + status, width / 2, height / 4);
 
-  // Draw buttons dynamically based on window size
-  float buttonWidth = width / 6;
-  float buttonHeight = height / 10;
-  float playX = width / 3 - buttonWidth / 2;
-  float nextX = 2 * width / 3 - buttonWidth / 2;
-  float buttonY = height / 2 - buttonHeight / 2;
-
-  drawButton("Play", playX, buttonY, buttonWidth, buttonHeight);
-  drawButton("Next", nextX, buttonY, buttonWidth, buttonHeight);
+  // Draw buttons
+  drawButton("Play", width / 4, height / 2);
+  drawButton("Stop", 2 * width / 4, height / 2);
+  drawButton("Next", 3 * width / 4, height / 2);
 }
 
-void drawButton(String label, float x, float y, float w, float h) {
+void drawButton(String label, float x, float y) {
   fill(100);
-  rect(x, y, w, h, 5);
+  rect(x - 50, y - 20, 100, 40, 5);
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(16);
-  text(label, x + w / 2, y + h / 2);
+  text(label, x, y);
 }
 
 void mousePressed() {
-  float buttonWidth = width / 6;
-  float buttonHeight = height / 10;
-  float playX = width / 3 - buttonWidth / 2;
-  float nextX = 2 * width / 3 - buttonWidth / 2;
-  float buttonY = height / 2 - buttonHeight / 2;
+  AudioPlayer activePlayer = players[currentTrack];
 
-  if (isButtonClicked(playX, buttonY, buttonWidth, buttonHeight)) {
-    player.play();
-  } else if (isButtonClicked(nextX, buttonY, buttonWidth, buttonHeight)) {
-    player.close();
+  if (isButtonClicked(width / 4, height / 2)) {
+    stopAllPlayers();
+    activePlayer.play();
+    status = "Playing";
+  } else if (isButtonClicked(2 * width / 4, height / 2)) {
+    activePlayer.rewind();
+    activePlayer.pause();
+    status = "Stopped";
+  } else if (isButtonClicked(3 * width / 4, height / 2)) {
+    stopAllPlayers();
     currentTrack = (currentTrack + 1) % trackNames.length;
-    player = minim.loadFile(trackNames[currentTrack]);
-    player.play();
+    status = "Next Track: " + trackNames[currentTrack];
   }
 }
 
-boolean isButtonClicked(float x, float y, float w, float h) {
-  return mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h;
+boolean isButtonClicked(float x, float y) {
+  return mouseX > x - 50 && mouseX < x + 50 && mouseY > y - 20 && mouseY < y + 20;
+}
+
+void stopAllPlayers() {
+  for (int i = 0; i < players.length; i++) {
+    players[i].rewind();
+    players[i].pause();
+  }
 }
 
 void stop() {
-  if (player != null) player.close();
+  for (int i = 0; i < players.length; i++) {
+    if (players[i] != null) players[i].close();
+  }
   if (minim != null) minim.stop();
   super.stop();
 }
