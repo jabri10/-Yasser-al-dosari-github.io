@@ -215,7 +215,7 @@ void setup() {
   // and load them by just their filename (e.g., loadImage("myimage.png")).
   // The 'upArrow' and 'folders' logic is typically for specific local file structures.
   // For simplicity and canvas compatibility, adjust these to direct data folder paths.
-  String myFirstImagePathway = "image.png"; 
+  String myFirstImagePathway = "images.png"; 
   String mySecondImagePathway = "the image.jpg";
   myFirstImage = loadImage(myFirstImagePathway);
   mySecondImage = loadImage(mySecondImagePathway);
